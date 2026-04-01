@@ -59,7 +59,7 @@ error_chain! {
             display("Not Implemented: '{}'", name)
         }
         /// A JS exception was thrown
-        Js(throw: neon::result::Throw) {
+        Js {
             description("JS exception")
             display("JS exception")
         }
@@ -84,7 +84,7 @@ impl de::Error for Error {
 }
 
 impl From<neon::result::Throw> for Error {
-    fn from(throw: neon::result::Throw) -> Self {
-        ErrorKind::Js(throw).into()
+    fn from(_: neon::result::Throw) -> Self {
+        ErrorKind::Js.into()
     }
 }

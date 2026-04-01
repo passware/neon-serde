@@ -53,7 +53,7 @@ macro_rules! make_test {
         fn $name(mut cx: FunctionContext) -> JsResult<JsValue> {
             let value = $val;
 
-            neon_serde::to_value(&mut cx, &value).or_else(|e| cx.throw_error(e.to_string()))
+            neon_serde2::to_value(&mut cx, &value).or_else(|e| cx.throw_error(e.to_string()))
         }
     };
 }
@@ -115,7 +115,7 @@ macro_rules! make_expect {
             let value = $val;
             let arg0 = cx.argument::<JsValue>(0)?;
 
-            let de_serialized: $val_type = match neon_serde::from_value(&mut cx, arg0) {
+            let de_serialized: $val_type = match neon_serde2::from_value(&mut cx, arg0) {
                 Ok(value) => value,
                 Err(e) => {
                     return cx.throw_error(e.to_string());
@@ -167,10 +167,10 @@ make_expect!(
 fn roundtrip_object(mut cx: FunctionContext) -> JsResult<JsValue> {
     let arg0 = cx.argument::<JsValue>(0)?;
 
-    let de_serialized: AnObjectTwo = neon_serde::from_value(&mut cx, arg0)
+    let de_serialized: AnObjectTwo = neon_serde2::from_value(&mut cx, arg0)
         .or_else(|e| cx.throw_error(e.to_string()))
         .unwrap();
-    let handle = neon_serde::to_value(&mut cx, &de_serialized)
+    let handle = neon_serde2::to_value(&mut cx, &de_serialized)
         .or_else(|e| cx.throw_error(e.to_string()))
         .unwrap();
     Ok(handle)

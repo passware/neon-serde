@@ -16,11 +16,11 @@ neon-serde is tested on node
 
 ## Usage
 
-#### `neon_serde::from_value`
+#### `neon_serde2::from_value`
 Convert a `Handle<js::JsValue>` to
 a type implementing `serde::Deserialize`
 
-#### `neon_serde::to_value`˚
+#### `neon_serde2::to_value`˚
 Convert a value implementing `serde::Serialize` to
 a `Handle<JsValue>`
 
@@ -114,7 +114,7 @@ struct AnObject {
 fn deserialize_something(mut cx: FunctionContext) -> JsResult<JsValue> {
     let arg0 = cx.argument::<JsValue>(0)?;
 
-    let arg0_value: AnObject = match neon_serde::from_value(&mut cx, arg0) {
+    let arg0_value: AnObject = match neon_serde2::from_value(&mut cx, arg0) {
         Ok(value) => value,
         Err(e) => {
             return cx.throw_error(e.to_string());
@@ -132,7 +132,7 @@ fn serialize_something(mut cx: FunctionContext) -> JsResult<JsValue> {
         c: "a string".into()
     };
 
-    neon_serde::to_value(&mut cx, &value)
+    neon_serde2::to_value(&mut cx, &value)
         .or_else(|e| cx.throw_error(e.to_string()))
 }
 ```
