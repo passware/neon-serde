@@ -47,7 +47,7 @@ fn deserialize_something(mut cx: FunctionContext) -> JsResult<JsValue> {
     let arg0_value: AnObject = match neon_serde2::from_value(&mut cx, arg0) {
         Ok(value) => value,
         Err(e) => {
-            return cx.throw_error(e.to_string());
+            return e.into_neon_result(&mut cx);
         }
     };
     println!("{:?}", arg0_value);
@@ -63,7 +63,7 @@ fn serialize_something(mut cx: FunctionContext) -> JsResult<JsValue> {
     };
 
     neon_serde2::to_value(&mut cx, &value)
-        .or_else(|e| cx.throw_error(e.to_string()))
+        .or_else(|e| e.into_neon_result(&mut cx))
 }
 ```
 

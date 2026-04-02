@@ -52,7 +52,7 @@ macro_rules! make_test {
         fn $name(mut cx: FunctionContext) -> JsResult<JsValue> {
             let value = $val;
 
-            neon_serde2::to_value(&mut cx, &value).or_else(|e| cx.throw_error(e.to_string()))
+            neon_serde2::to_value(&mut cx, &value).or_else(|e| e.into_neon_result(&mut cx))
         }
     };
 }
@@ -167,10 +167,10 @@ fn roundtrip_object(mut cx: FunctionContext) -> JsResult<JsValue> {
     let arg0 = cx.argument::<JsValue>(0)?;
 
     let de_serialized: AnObjectTwo = neon_serde2::from_value(&mut cx, arg0)
-        .or_else(|e| cx.throw_error(e.to_string()))
+        .or_else(|e| e.into_neon_result(&mut cx))
         .unwrap();
     let handle = neon_serde2::to_value(&mut cx, &de_serialized)
-        .or_else(|e| cx.throw_error(e.to_string()))
+        .or_else(|e| e.into_neon_result(&mut cx))
         .unwrap();
     Ok(handle)
 }

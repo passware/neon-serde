@@ -47,7 +47,7 @@
 //!     let arg0 = cx.argument::<JsValue>(0)?;
 //!
 //!     let arg0_value :AnObject = neon_serde2::from_value(&mut cx, arg0)
-//!         .or_else(|e| cx.throw_error(e.to_string()))
+//!         .or_else(|e| e.into_neon_result(&mut cx))
 //!         .unwrap();
 //!     println!("{:?}", arg0_value);
 //!
@@ -62,7 +62,7 @@
 //!     };
 //!
 //!     let js_value = neon_serde2::to_value(&mut cx, &value)
-//!         .or_else(|e| cx.throw_error(e.to_string()))
+//!         .or_else(|e| e.into_neon_result(&mut cx))
 //!         .unwrap();
 //!     Ok(js_value)
 //! }
@@ -97,12 +97,12 @@ mod tests {
             let result: () = {
                 let arg: Handle<'j, JsValue> = cx.argument::<JsValue>(0)?;
                 let () = from_value(&mut cx, arg)
-                    .or_else(|e| cx.throw_error(e.to_string()))
+                    .or_else(|e| e.into_neon_result(&mut cx))
                     .unwrap();
                 ()
             };
             let result: Handle<'j, JsValue> = to_value(&mut cx, &result)
-                .or_else(|e| cx.throw_error(e.to_string()))
+                .or_else(|e| e.into_neon_result(&mut cx))
                 .unwrap();
             Ok(result)
         }
@@ -116,11 +116,11 @@ mod tests {
             let result: () = {
                 let arg: Option<Handle<'j, JsValue>> = cx.argument_opt(0);
                 let () = from_value_opt(&mut cx, arg)
-                    .or_else(|e| cx.throw_error(e.to_string()))
+                    .or_else(|e| e.into_neon_result(&mut cx))
                     .unwrap();
             };
             let result: Handle<'j, JsValue> = to_value(&mut cx, &result)
-                .or_else(|e| cx.throw_error(e.to_string()))
+                .or_else(|e| e.into_neon_result(&mut cx))
                 .unwrap();
             Ok(result)
         }
