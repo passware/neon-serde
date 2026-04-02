@@ -4,6 +4,7 @@ Change Log
 ## Version 1.1.1
 
 * Update to neon 1.1.1
+* removed macro support
 
 ## Version 0.9.1
 
