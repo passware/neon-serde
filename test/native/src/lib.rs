@@ -1,5 +1,4 @@
 extern crate neon;
-extern crate neon_serde;
 extern crate serde_bytes;
 #[macro_use]
 extern crate serde_derive;
@@ -53,7 +52,7 @@ macro_rules! make_test {
         fn $name(mut cx: FunctionContext) -> JsResult<JsValue> {
             let value = $val;
 
-            neon_serde::to_value(&mut cx, &value).or_else(|e| cx.throw_error(e.to_string()))
+            neon_serde2::to_value(&mut cx, &value).or_else(|e| e.into_neon_result(&mut cx))
         }
     };
 }
@@ -115,14 +114,14 @@ macro_rules! make_expect {
             let value = $val;
             let arg0 = cx.argument::<JsValue>(0)?;
 
-            let de_serialized: $val_type = match neon_serde::from_value(&mut cx, arg0) {
+            let de_serialized: $val_type = match neon_serde2::from_value(&mut cx, arg0) {
                 Ok(value) => value,
                 Err(e) => {
-                    return cx.throw_error(e.to_string());
+                    return e.into_neon_result(&mut cx);
                 }
             };
             assert_eq!(value, de_serialized);
-            Ok(JsUndefined::new().upcast())
+            Ok(JsUndefined::new(&mut cx).upcast())
         }
     };
 }
@@ -167,30 +166,31 @@ make_expect!(
 fn roundtrip_object(mut cx: FunctionContext) -> JsResult<JsValue> {
     let arg0 = cx.argument::<JsValue>(0)?;
 
-    let de_serialized: AnObjectTwo = neon_serde::from_value(&mut cx, arg0)
-        .or_else(|e| cx.throw_error(e.to_string()))
+    let de_serialized: AnObjectTwo = neon_serde2::from_value(&mut cx, arg0)
+        .or_else(|e| e.into_neon_result(&mut cx))
         .unwrap();
-    let handle = neon_serde::to_value(&mut cx, &de_serialized)
-        .or_else(|e| cx.throw_error(e.to_string()))
+    let handle = neon_serde2::to_value(&mut cx, &de_serialized)
+        .or_else(|e| e.into_neon_result(&mut cx))
         .unwrap();
     Ok(handle)
 }
 
-register_module!(mut m, {
-    m.export_function("make_num_77", make_num_77)?;
-    m.export_function("make_num_32", make_num_32)?;
-    m.export_function("make_str_hello", make_str_hello)?;
-    m.export_function("make_num_array", make_num_array)?;
-    m.export_function("make_buff", make_buff)?;
-    m.export_function("make_obj", make_obj)?;
-    m.export_function("make_object", make_object)?;
-    m.export_function("make_map", make_map)?;
+#[neon::main]
+fn register(mut cx: ModuleContext) -> NeonResult<()> {
+    cx.export_function("make_num_77", make_num_77)?;
+    cx.export_function("make_num_32", make_num_32)?;
+    cx.export_function("make_str_hello", make_str_hello)?;
+    cx.export_function("make_num_array", make_num_array)?;
+    cx.export_function("make_buff", make_buff)?;
+    cx.export_function("make_obj", make_obj)?;
+    cx.export_function("make_object", make_object)?;
+    cx.export_function("make_map", make_map)?;
 
-    m.export_function("expect_hello_world", expect_hello_world)?;
-    m.export_function("expect_obj", expect_obj)?;
-    m.export_function("expect_num_array", expect_num_array)?;
-    m.export_function("expect_buffer", expect_buffer)?;
+    cx.export_function("expect_hello_world", expect_hello_world)?;
+    cx.export_function("expect_obj", expect_obj)?;
+    cx.export_function("expect_num_array", expect_num_array)?;
+    cx.export_function("expect_buffer", expect_buffer)?;
 
-    m.export_function("roundtrip_object", roundtrip_object)?;
+    cx.export_function("roundtrip_object", roundtrip_object)?;
     Ok(())
-});
+}
