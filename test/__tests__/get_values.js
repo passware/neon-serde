@@ -1,5 +1,7 @@
 const native = require('../native');
-const expect = require('expect');
+const expect = require('expect').expect;
+
+const asssetionRegex = /internal error in Neon module: assertion `left == right` failed/
 
 describe('all values ok', () => {
     it('value 32', () => {
@@ -139,7 +141,7 @@ describe('all values ok', () => {
 describe('throwing functions', () => {
 
     it('expect_hello_world', () => {
-        expect(() => native.expect_hello_world("GoodBye World")).toThrow(/assertion failed:/);
+        expect(() => native.expect_hello_world("GoodBye World")).toThrow(asssetionRegex);
     });
 
     it('expect_obj', () => {
@@ -147,7 +149,7 @@ describe('throwing functions', () => {
     });
 
     it('expect_num_array', () => {
-        expect(() => native.expect_num_array([0, 0, 0, 0])).toThrow(/assertion failed:/);
+        expect(() => native.expect_num_array([0, 0, 0, 0])).toThrow(asssetionRegex);
     });
 
     it('expect_buffer', () => {
@@ -169,6 +171,6 @@ describe('throwing functions', () => {
             })
         }
         expect(() => native.expect_obj(obj))
-            .toThrow('JS exception');
+            .toThrow('Hi There prop c');
     })
 });

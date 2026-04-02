@@ -3,7 +3,6 @@
 //!
 
 use errors::Error as LibError;
-use errors::ErrorKind;
 use errors::Result as LibResult;
 use neon::prelude::*;
 use neon::types::buffer::TypedArray;
@@ -85,9 +84,9 @@ impl<'x, 'd, 'a, 'j, C: Context<'j>> serde::de::Deserializer<'x>
             let mut deserializer = JsObjectAccess::new(self.cx, val)?;
             visitor.visit_map(&mut deserializer)
         } else {
-            bail!(ErrorKind::NotImplemented(
-                "unimplemented Deserializer::Deserializer",
-            ));
+            Err(LibError::NotImplemented {
+                name: "unimplemented Deserializer::Deserializer",
+            })
         }
     }
 
@@ -120,10 +119,9 @@ impl<'x, 'd, 'a, 'j, C: Context<'j>> serde::de::Deserializer<'x>
             let prop_names = val.get_own_property_names(self.cx)?;
             let len = prop_names.len(self.cx);
             if len != 1 {
-                Err(ErrorKind::InvalidKeyType(format!(
-                    "object key with {} properties",
-                    len
-                )))?
+                Err(LibError::InvalidKeyType {
+                    key: format!("object key with {} properties", len),
+                })?
             }
             let key = prop_names
                 .get::<JsValue, _, _>(self.cx, 0)?
@@ -134,7 +132,7 @@ impl<'x, 'd, 'a, 'j, C: Context<'j>> serde::de::Deserializer<'x>
             visitor.visit_enum(JsEnumAccess::new(self.cx, key_value, Some(enum_value)))
         } else {
             let m = self.input.to_string(self.cx)?.value(self.cx);
-            Err(ErrorKind::InvalidKeyType(m))?
+            Err(LibError::InvalidKeyType { key: m })?
         }
     }
 
@@ -266,7 +264,10 @@ impl<'x, 'a, 'j, C: Context<'j>> MapAccess<'x> for JsObjectAccess<'a, 'j, C> {
         V: DeserializeSeed<'x>,
     {
         if self.idx >= self.len {
-            return Err(ErrorKind::ArrayIndexOutOfBounds(self.len, self.idx))?;
+            return Err(LibError::ArrayIndexOutOfBounds {
+                length: self.len,
+                index: self.idx,
+            })?;
         }
         let prop_name: Handle<JsValue> = self.prop_names.get(self.cx, self.idx)?;
         let value = self.input.get(self.cx, prop_name)?;

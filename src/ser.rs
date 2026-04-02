@@ -3,7 +3,6 @@
 //!
 
 use errors::Error;
-use errors::ErrorKind;
 use errors::Result as LibResult;
 use neon::prelude::*;
 use neon::types::buffer::TypedArray;
@@ -14,7 +13,7 @@ use std::marker::PhantomData;
 fn as_num<T: num::cast::NumCast, OutT: num::cast::NumCast>(n: T) -> LibResult<OutT> {
     match num::cast::<T, OutT>(n) {
         Some(n2) => Ok(n2),
-        None => bail!(ErrorKind::CastError),
+        None => Err(Error::CastError),
     }
 }
 
@@ -178,15 +177,16 @@ where
     fn serialize_char(self, v: char) -> Result<Self::Ok, Self::Error> {
         let mut b = [0; 4];
         let result = v.encode_utf8(&mut b);
-        let js_str =
-            JsString::try_new(self.cx, result).map_err(|_| ErrorKind::StringTooLongForChar(4))?;
+        let js_str = JsString::try_new(self.cx, result)
+            .map_err(|_| Error::StringTooLongForChar { len: 4 })?;
         Ok(js_str.upcast())
     }
 
     #[inline]
     fn serialize_str(self, v: &str) -> Result<Self::Ok, Self::Error> {
         let len = v.len();
-        let js_str = JsString::try_new(self.cx, v).map_err(|_| ErrorKind::StringTooLong(len))?;
+        let js_str =
+            JsString::try_new(self.cx, v).map_err(|_| Error::StringTooLong { len: len })?;
         Ok(js_str.upcast())
     }
 

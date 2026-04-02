@@ -1,5 +1,4 @@
 extern crate neon;
-extern crate neon_serde;
 extern crate serde_bytes;
 #[macro_use]
 extern crate serde_derive;
@@ -118,11 +117,11 @@ macro_rules! make_expect {
             let de_serialized: $val_type = match neon_serde2::from_value(&mut cx, arg0) {
                 Ok(value) => value,
                 Err(e) => {
-                    return cx.throw_error(e.to_string());
+                    return e.into_neon_result(&mut cx);
                 }
             };
             assert_eq!(value, de_serialized);
-            Ok(JsUndefined::new().upcast())
+            Ok(JsUndefined::new(&mut cx).upcast())
         }
     };
 }
@@ -176,21 +175,22 @@ fn roundtrip_object(mut cx: FunctionContext) -> JsResult<JsValue> {
     Ok(handle)
 }
 
-register_module!(mut m, {
-    m.export_function("make_num_77", make_num_77)?;
-    m.export_function("make_num_32", make_num_32)?;
-    m.export_function("make_str_hello", make_str_hello)?;
-    m.export_function("make_num_array", make_num_array)?;
-    m.export_function("make_buff", make_buff)?;
-    m.export_function("make_obj", make_obj)?;
-    m.export_function("make_object", make_object)?;
-    m.export_function("make_map", make_map)?;
+#[neon::main]
+fn register(mut cx: ModuleContext) -> NeonResult<()> {
+    cx.export_function("make_num_77", make_num_77)?;
+    cx.export_function("make_num_32", make_num_32)?;
+    cx.export_function("make_str_hello", make_str_hello)?;
+    cx.export_function("make_num_array", make_num_array)?;
+    cx.export_function("make_buff", make_buff)?;
+    cx.export_function("make_obj", make_obj)?;
+    cx.export_function("make_object", make_object)?;
+    cx.export_function("make_map", make_map)?;
 
-    m.export_function("expect_hello_world", expect_hello_world)?;
-    m.export_function("expect_obj", expect_obj)?;
-    m.export_function("expect_num_array", expect_num_array)?;
-    m.export_function("expect_buffer", expect_buffer)?;
+    cx.export_function("expect_hello_world", expect_hello_world)?;
+    cx.export_function("expect_obj", expect_obj)?;
+    cx.export_function("expect_num_array", expect_num_array)?;
+    cx.export_function("expect_buffer", expect_buffer)?;
 
-    m.export_function("roundtrip_object", roundtrip_object)?;
+    cx.export_function("roundtrip_object", roundtrip_object)?;
     Ok(())
-});
+}

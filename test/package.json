@@ -6,9 +6,9 @@
   "author": "Gabriel Castro <dev@GabrielCastro.ca>",
   "license": "MIT",
   "devDependencies": {
-    "expect": "^24.9.0",
-    "mocha": "^6.2.1",
-    "neon-cli": "^0.7.0"
+    "expect": "^30.3.0",
+    "mocha": "^11.7.5",
+    "neon-cli": "^0.10.1"
   },
   "scripts": {
     "build": "neon build --release",
